@@ -33,11 +33,21 @@ To compile LibrePCB, you need the following software components:
 - g++ >= 4.8, MinGW >= 4.8, or Clang >= 3.3 (C++11 support is required)
 - Qt >= 5.2 (http://www.qt.io/download-open-source/)
 - libglu1-mesa-dev (`sudo apt-get install libglu1-mesa-dev`)
+- `pkg-config` (http://www.freedesktop.org/wiki/Software/pkg-config/)
+- `libxml2` / `libxml2-dev` (http://www.xmlsoft.org/index.html)
+
+### Microsoft Windows
+You need the following archives (* stands for the version number):
+`gettext-runtime_*_win32.zip, glib_*_win32.zip, pkg-config_*_win32.zip, zlib_*_win32.zip, libxml2_*_win32.zip, libxml2-dev_*_win32.zip`
+
+These archives can be downloaded from http://ftp.gnome.org/pub/gnome/binaries/win32/glib/ and http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/.
+
+All these archives contain a "bin" directory. Copy all these "bin" directories into your compiler's directory (for example C:\Qt\5.3\mingw482_32\). From the package "libxml2-dev" you need also to copy the directories "include" and "lib" into your compilers directory.
 
 #### Installation on Ubuntu 14.04 and later
 
 ```bash
-sudo apt-get install g++ qt5-default qttools5-dev-tools qt5-doc qtcreator libglu1-mesa-dev
+sudo apt-get install g++ qt5-default qttools5-dev-tools qt5-doc qtcreator libglu1-mesa-dev pkg-config libxml2 libxml2-dev
 ```
 
 #### Installation on ArchLinux
