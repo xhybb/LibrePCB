@@ -34,8 +34,17 @@ CONFIG += c++11
 
 # enable compiler warnings
 CONFIG += warn_on
-QMAKE_CXXFLAGS += -Wextra
-QMAKE_CXXFLAGS_DEBUG += -Wextra
+QMAKE_CXXFLAGS_WARN_ON += -Wall -Wextra -Weffc++ -pedantic
+QMAKE_CXXFLAGS_RELEASE += -Werror
+
+# mark Qt include paths as system paths to suppress compiler warnings caused by Qt's header files
+QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtCore
+QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtWidgets
+QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtOpenGl
+QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtWebKitWidgets
+QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtXml
+QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtPrintSupport
+QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtSql
 
 # Define the application version
 DEFINES += APP_VERSION_MAJOR=0

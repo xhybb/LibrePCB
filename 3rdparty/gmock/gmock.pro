@@ -13,12 +13,12 @@ GENERATED_DIR = ../../generated
 # Use common project definitions
 include(../../common.pri)
 
+# compile gmock as static library
 CONFIG -= qt app_bundle
 CONFIG += staticlib thread
 
 # suppress compiler warnings
-QMAKE_CXXFLAGS += -Wno-missing-field-initializers -Wno-unused-variable -Wno-missing-field-initializers
-QMAKE_CXXFLAGS_DEBUG += -Wno-missing-field-initializers -Wno-unused-variable -Wno-missing-field-initializers
+CONFIG += warn_off
 
 INCLUDEPATH += \
     gtest \
