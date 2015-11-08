@@ -35,7 +35,6 @@ CONFIG += c++11
 # enable compiler warnings
 CONFIG += warn_on
 QMAKE_CXXFLAGS_WARN_ON += -Wall -Wextra -Weffc++ -pedantic
-QMAKE_CXXFLAGS_RELEASE += -Werror
 
 # mark Qt include paths as system paths to suppress compiler warnings caused by Qt's header files
 QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtCore
