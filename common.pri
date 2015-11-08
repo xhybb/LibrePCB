@@ -40,11 +40,14 @@ QMAKE_CXXFLAGS_RELEASE += -Werror
 # mark Qt include paths as system paths to suppress compiler warnings caused by Qt's header files
 QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtCore
 QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtWidgets
-QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtOpenGl
+QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtOpenGL
 QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtWebKitWidgets
 QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtXml
 QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtPrintSupport
 QMAKE_CXXFLAGS += -isystem $$[QT_INSTALL_HEADERS]/QtSql
+
+# mark the UI output directory as system path to suppress compiler warnings caused by UI header files
+QMAKE_CXXFLAGS += -isystem $${UI_HEADERS_DIR}
 
 # Define the application version
 DEFINES += APP_VERSION_MAJOR=0
