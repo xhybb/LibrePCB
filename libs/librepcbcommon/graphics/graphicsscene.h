@@ -59,6 +59,10 @@ class GraphicsScene final : public QGraphicsScene
 
     private:
 
+        // Private Methods
+        Q_DISABLE_COPY(GraphicsScene)
+
+        // Private Membervariables
         QGraphicsRectItem* mSelectionRectItem;
 };
 

@@ -28,11 +28,13 @@
  *  Constructors / Destructor
  ****************************************************************************************/
 
-Version::Version() noexcept
+Version::Version() noexcept :
+    mNumbers()
 {
 }
 
-Version::Version(const QString& version) noexcept
+Version::Version(const QString& version) noexcept :
+    mNumbers()
 {
     setVersion(version);
 }

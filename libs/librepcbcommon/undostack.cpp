@@ -32,7 +32,7 @@
  ****************************************************************************************/
 
 UndoStack::UndoStack() noexcept :
-    QObject(0), mCurrentIndex(0), mCleanIndex(0), mCommandActive(false)
+    QObject(0), mCommands(), mCurrentIndex(0), mCleanIndex(0), mCommandActive(false)
 {
 }
 

@@ -36,7 +36,8 @@
  ****************************************************************************************/
 
 AttributeType::AttributeType(Type_t type, const QString& typeName, const QString& typeNameTr) noexcept :
-    mType(type), mTypeName(typeName), mTypeNameTr(typeNameTr), mDefaultUnit(nullptr)
+    mType(type), mTypeName(typeName), mTypeNameTr(typeNameTr), mAvailableUnits(),
+    mDefaultUnit(nullptr)
 {
 }
 

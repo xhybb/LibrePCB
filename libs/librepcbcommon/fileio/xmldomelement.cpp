@@ -33,13 +33,13 @@
  ****************************************************************************************/
 
 XmlDomElement::XmlDomElement(const QString& name, const QString& text) noexcept :
-    mDocument(nullptr), mParent(nullptr), mName(name), mText(text)
+    mDocument(nullptr), mParent(nullptr), mName(name), mText(text), mChilds(), mAttributes()
 {
     Q_ASSERT(isValidXmlTagName(mName) == true);
 }
 
 XmlDomElement::XmlDomElement(QDomElement domElement, XmlDomElement* parent, XmlDomDocument* doc) noexcept :
-    mDocument(doc), mParent(parent), mName(domElement.tagName()), mText()
+    mDocument(doc), mParent(parent), mName(domElement.tagName()), mText(), mChilds(), mAttributes()
 {
     Q_ASSERT(isValidXmlTagName(mName) == true);
 

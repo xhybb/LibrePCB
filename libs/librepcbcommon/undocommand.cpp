@@ -30,7 +30,7 @@
  ****************************************************************************************/
 
 UndoCommand::UndoCommand(const QString &text, UndoCommand* parent) throw (Exception) :
-    mRedoCount(0), mUndoCount(0), mParent(parent), mText(text)
+    mRedoCount(0), mUndoCount(0), mParent(parent), mText(text), mChilds()
 {
     if (mParent)
         mParent->appendChild(this);

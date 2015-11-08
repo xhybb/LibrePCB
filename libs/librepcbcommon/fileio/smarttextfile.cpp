@@ -29,7 +29,7 @@
  ****************************************************************************************/
 
 SmartTextFile::SmartTextFile(const FilePath& filepath, bool restore, bool readOnly, bool create) throw (Exception) :
-    SmartFile(filepath, restore, readOnly, create)
+    SmartFile(filepath, restore, readOnly, create), mContent()
 {
     if (mIsCreated)
     {
