@@ -69,6 +69,8 @@ SGI_NetPoint::~SGI_NetPoint() noexcept
 
 void SGI_NetPoint::updateCacheAndRepaint() noexcept
 {
+    setToolTip(mNetPoint.getNetSignalOfNetSegment().getName());
+
     prepareGeometryChange();
     mPointVisible = mNetPoint.isVisible();
     setZValue(mPointVisible ? Schematic::ZValue_VisibleNetPoints : Schematic::ZValue_HiddenNetPoints);
@@ -84,7 +86,7 @@ void SGI_NetPoint::paint(QPainter* painter, const QStyleOptionGraphicsItem* opti
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
-    bool highlight = mNetPoint.isSelected() || mNetPoint.getNetSignal().isHighlighted();
+    bool highlight = mNetPoint.isSelected() || mNetPoint.getNetSignalOfNetSegment().isHighlighted();
 
     if (mLayer->isVisible() && mPointVisible)
     {
