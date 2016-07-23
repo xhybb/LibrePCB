@@ -32,13 +32,14 @@
 #include <librepcbproject/schematics/items/si_netpoint.h>
 #include <librepcbproject/schematics/items/si_netline.h>
 #include <librepcbproject/schematics/items/si_symbolpin.h>
+#include <librepcbproject/schematics/items/si_netsegment.h>
 #include <librepcbproject/circuit/cmd/cmdnetclassadd.h>
 #include <librepcbproject/circuit/cmd/cmdnetsignaladd.h>
 #include <librepcbproject/circuit/cmd/cmdcompsiginstsetnetsignal.h>
-#include <librepcbproject/schematics/cmd/cmdschematicnetpointadd.h>
 #include <librepcbproject/schematics/cmd/cmdschematicnetpointedit.h>
-#include <librepcbproject/schematics/cmd/cmdschematicnetlineadd.h>
-#include <librepcbproject/schematics/cmd/cmdschematicnetlineremove.h>
+#include <librepcbproject/schematics/cmd/cmdschematicnetsegmentremoveelements.h>
+#include <librepcbproject/schematics/cmd/cmdschematicnetsegmentaddelements.h>
+#include <librepcbproject/schematics/cmd/cmdschematicnetsegmentadd.h>
 #include "cmdcombinenetsignals.h"
 #include "cmdcombineschematicnetpoints.h"
 #include "cmdcombineallnetsignalsunderschematicnetpoint.h"
@@ -80,7 +81,8 @@ bool CmdPlaceSchematicNetPoint::performExecute() throw (Exception)
     // determine whether we have to create a new netpoint or not
     if (netpointsUnderCursor.isEmpty()) {
         NetSignal* netsignal = getOrCreateNewNetSignal(); // can throw
-        mNetPoint = createNewNetPoint(*netsignal);
+        SI_NetSegment* netsegment = createNewNetSegment(*netsignal); // can throw
+        mNetPoint = createNewNetPoint(*netsegment); // can throw
     } else {
         mNetPoint = netpointsUnderCursor.first();
     }
@@ -124,11 +126,19 @@ NetSignal* CmdPlaceSchematicNetPoint::getOrCreateNewNetSignal() throw (Exception
     }
 }
 
-SI_NetPoint* CmdPlaceSchematicNetPoint::createNewNetPoint(NetSignal& netsignal) throw (Exception)
+SI_NetSegment* CmdPlaceSchematicNetPoint::createNewNetSegment(NetSignal& netsignal) throw (Exception)
 {
-    CmdSchematicNetPointAdd* cmd = new CmdSchematicNetPointAdd(mSchematic, netsignal, mPosition);
+    CmdSchematicNetSegmentAdd* cmd = new CmdSchematicNetSegmentAdd(mSchematic, netsignal);
     execNewChildCmd(cmd); // can throw
-    return cmd->getNetPoint();
+    return cmd->getNetSegment();
+}
+
+SI_NetPoint* CmdPlaceSchematicNetPoint::createNewNetPoint(SI_NetSegment& netsegment) throw (Exception)
+{
+    auto* cmd = new CmdSchematicNetSegmentAddElements(netsegment);
+    SI_NetPoint* p = cmd->addNetPoint(mPosition);
+    execNewChildCmd(cmd); // can throw
+    return p;
 }
 
 /*****************************************************************************************

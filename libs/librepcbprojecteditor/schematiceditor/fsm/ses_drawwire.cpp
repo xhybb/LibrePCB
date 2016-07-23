@@ -32,8 +32,9 @@
 #include <librepcbproject/circuit/netsignal.h>
 #include <librepcbproject/circuit/cmd/cmdnetsignaladd.h>
 #include <librepcbproject/schematics/items/si_netpoint.h>
-#include <librepcbproject/schematics/cmd/cmdschematicnetpointadd.h>
-#include <librepcbproject/schematics/cmd/cmdschematicnetlineadd.h>
+#include <librepcbproject/schematics/items/si_netsegment.h>
+#include <librepcbproject/schematics/cmd/cmdschematicnetsegmentremoveelements.h>
+#include <librepcbproject/schematics/cmd/cmdschematicnetsegmentaddelements.h>
 #include <librepcbproject/schematics/schematic.h>
 #include <librepcblibrary/sym/symbolpin.h>
 #include <librepcbproject/schematics/items/si_symbol.h>
@@ -41,8 +42,6 @@
 #include <librepcbproject/circuit/componentsignalinstance.h>
 #include <librepcbproject/circuit/cmd/cmdcompsiginstsetnetsignal.h>
 #include <librepcbproject/circuit/cmd/cmdnetclassadd.h>
-#include <librepcbproject/schematics/cmd/cmdschematicnetlineremove.h>
-#include <librepcbproject/schematics/cmd/cmdschematicnetpointremove.h>
 #include <librepcbproject/schematics/items/si_netline.h>
 #include <librepcbproject/schematics/cmd/cmdschematicnetpointedit.h>
 #include <librepcbproject/schematics/cmd/cmdschematicnetlabeledit.h>
@@ -380,40 +379,27 @@ bool SES_DrawWire::startPositioning(Schematic& schematic, const Point& pos,
             mFixedNetPoint = cmd->getNetPoint();
         }
         Q_ASSERT(mFixedNetPoint);
-        NetSignal* netsignal = &mFixedNetPoint->getNetSignal();
+        SI_NetSegment* netsegment = &mFixedNetPoint->getNetSegment();
+        NetSignal* netsignal = &netsegment->getNetSignal();
         NetClass* netclass = &netsignal->getNetClass();
 
         // update the command toolbar
         mNetClassComboBox->setCurrentIndex(mNetClassComboBox->findData(netclass->getUuid().toStr()));
         mNetSignalComboBox->setCurrentIndex(mNetSignalComboBox->findData(netsignal->getUuid().toStr()));
 
-        // add second netpoint
-        CmdSchematicNetPointAdd* cmdNetPointAdd2 = new CmdSchematicNetPointAdd(
-            schematic, *netsignal, pos);
-        mUndoStack.appendToCmdGroup(cmdNetPointAdd2);
-        mPositioningNetPoint1 = cmdNetPointAdd2->getNetPoint();
-        Q_ASSERT(mPositioningNetPoint1);
+        // add more netpoints & netlines
+        CmdSchematicNetSegmentAddElements* cmd = new CmdSchematicNetSegmentAddElements(*netsegment);
+        SI_NetPoint* p2 = cmd->addNetPoint(pos); // second netpoint
+        SI_NetLine* l1 = cmd->addNetLine(*mFixedNetPoint, *p2); // first netline
+        SI_NetPoint* p3 = cmd->addNetPoint(pos); // third netpoint
+        SI_NetLine* l2 = cmd->addNetLine(*p2, *p3); // second netline
+        mUndoStack.appendToCmdGroup(cmd); // can throw
 
-        // add first netline
-        CmdSchematicNetLineAdd* cmdNetLineAdd1 = new CmdSchematicNetLineAdd(
-            schematic, *mFixedNetPoint, *cmdNetPointAdd2->getNetPoint());
-        mUndoStack.appendToCmdGroup(cmdNetLineAdd1);
-        mPositioningNetLine1 = cmdNetLineAdd1->getNetLine();
-        Q_ASSERT(mPositioningNetLine1);
-
-        // add third netpoint
-        CmdSchematicNetPointAdd* cmdNetPointAdd3 = new CmdSchematicNetPointAdd(
-            schematic, *netsignal, pos);
-        mUndoStack.appendToCmdGroup(cmdNetPointAdd3);
-        mPositioningNetPoint2 = cmdNetPointAdd3->getNetPoint();
-        Q_ASSERT(mPositioningNetPoint2);
-
-        // add second netline
-        CmdSchematicNetLineAdd* cmdNetLineAdd2 = new CmdSchematicNetLineAdd(
-            schematic, *cmdNetPointAdd2->getNetPoint(), *cmdNetPointAdd3->getNetPoint());
-        mUndoStack.appendToCmdGroup(cmdNetLineAdd2);
-        mPositioningNetLine2 = cmdNetLineAdd2->getNetLine();
-        Q_ASSERT(mPositioningNetLine2);
+        // update members
+        mPositioningNetPoint1 = p2;
+        mPositioningNetLine1 = l1;
+        mPositioningNetPoint2 = p3;
+        mPositioningNetLine2 = l2;
 
         // properly place the new netpoints/netlines according the current wire mode
         updateNetpointPositions(pos);

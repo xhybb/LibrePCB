@@ -26,9 +26,14 @@
 #include <librepcbproject/circuit/netsignal.h>
 #include <librepcbproject/schematics/items/si_netpoint.h>
 #include <librepcbproject/schematics/items/si_netline.h>
-#include <librepcbproject/schematics/cmd/cmdschematicnetlineremove.h>
-#include <librepcbproject/schematics/cmd/cmdschematicnetlineadd.h>
-#include <librepcbproject/schematics/cmd/cmdschematicnetpointremove.h>
+#include <librepcbproject/schematics/items/si_netlabel.h>
+#include <librepcbproject/schematics/items/si_netsegment.h>
+#include <librepcbproject/schematics/cmd/cmdschematicnetsegmentremoveelements.h>
+#include <librepcbproject/schematics/cmd/cmdschematicnetsegmentaddelements.h>
+#include <librepcbproject/schematics/cmd/cmdschematicnetlabelremove.h>
+#include <librepcbproject/schematics/cmd/cmdschematicnetlabeladd.h>
+#include <librepcbproject/schematics/cmd/cmdschematicnetsegmentremove.h>
+#include <librepcbproject/schematics/cmd/cmdschematicnetsegmentadd.h>
 
 /*****************************************************************************************
  *  Namespace
@@ -62,26 +67,69 @@ bool CmdCombineSchematicNetPoints::performExecute() throw (Exception)
 
     // TODO: do not create redundant netlines!
 
-    // change netpoint of all affected netlines
-    foreach (SI_NetLine* line, mNetPointToBeRemoved.getLines()) {
-        SI_NetPoint* otherPoint;
-        if (&line->getStartPoint() == &mNetPointToBeRemoved) {
-            otherPoint = &line->getEndPoint();
-        } else if (&line->getEndPoint() == &mNetPointToBeRemoved) {
-            otherPoint = &line->getStartPoint();
-        } else {
-            throw LogicError(__FILE__, __LINE__);
+    // if the netpoints are from two different netsegment, remove & combine both segments
+    // TODO: maybe add the ability to change netsegment of netpoints/netlines instead
+    //       of remove these items and add a completely new items (attributes are lost!)
+    SI_NetSegment& netSegmentToBeRemoved = mNetPointToBeRemoved.getNetSegment();
+    SI_NetSegment& resultingNetSegment = mResultingNetPoint.getNetSegment();
+    if (netSegmentToBeRemoved != resultingNetSegment) {
+        // remove netsegment
+        execNewChildCmd(new CmdSchematicNetSegmentRemove(netSegmentToBeRemoved)); // can throw
+        // copy all netpoints
+        QHash<SI_NetPoint*, SI_NetPoint*> netPointMap;
+        foreach (SI_NetPoint* netpoint, netSegmentToBeRemoved.getNetPoints()) {
+            if (netpoint == &mNetPointToBeRemoved) {
+                netPointMap.insert(&mNetPointToBeRemoved, &mResultingNetPoint);
+            } else {
+                SI_NetPoint* createdNetPoint = nullptr;
+                auto* cmd = new CmdSchematicNetSegmentAddElements(resultingNetSegment);
+                if (netpoint->isAttachedToPin()) {
+                    SI_SymbolPin* pin = netpoint->getSymbolPin(); Q_ASSERT(pin);
+                    createdNetPoint = cmd->addNetPoint(*pin);
+                } else {
+                    createdNetPoint = cmd->addNetPoint(netpoint->getPosition());
+                }
+                execNewChildCmd(cmd); // can throw
+                Q_ASSERT(createdNetPoint);
+                netPointMap.insert(netpoint, createdNetPoint);
+            }
         }
-        // TODO: maybe add the ability to change start-/endpoint of lines instead
-        //       of remove the line and add a completely new line (attributes are lost!)
-        execNewChildCmd(new CmdSchematicNetLineRemove(*line)); // can throw
-        if (otherPoint != &mResultingNetPoint) {
-            execNewChildCmd(new CmdSchematicNetLineAdd(line->getSchematic(), mResultingNetPoint, *otherPoint)); // can throw
+        // copy all netlines
+        foreach (SI_NetLine* netline, netSegmentToBeRemoved.getNetLines()) {
+            SI_NetPoint* p1 = netPointMap.value(&netline->getStartPoint()); Q_ASSERT(p1);
+            SI_NetPoint* p2 = netPointMap.value(&netline->getEndPoint()); Q_ASSERT(p2);
+            auto* cmd = new CmdSchematicNetSegmentAddElements(resultingNetSegment);
+            cmd->addNetLine(*p1, *p2);
+            execNewChildCmd(cmd); // can throw
         }
-    }
+        // copy all netlabels
+        foreach (SI_NetLabel* netlabel, netSegmentToBeRemoved.getNetLabels()) {
+            CmdSchematicNetLabelAdd* cmd = new CmdSchematicNetLabelAdd(resultingNetSegment, netlabel->getPosition());
+            execNewChildCmd(cmd); // can throw
+        }
+    } else {
+        // both netpoints are in the same netsegment
 
-    // remove the unused netpoint
-    execNewChildCmd(new CmdSchematicNetPointRemove(mNetPointToBeRemoved)); // can throw
+        // change netpoint of all affected netlines
+        foreach (SI_NetLine* line, mNetPointToBeRemoved.getLines()) {
+            SI_NetPoint* otherPoint = line->getOtherPoint(mNetPointToBeRemoved); Q_ASSERT(otherPoint);
+            // TODO: maybe add the ability to change start-/endpoint of lines instead
+            //       of remove the line and add a completely new line (attributes are lost!)
+            auto* cmd = new CmdSchematicNetSegmentRemoveElements(line->getNetSegment());
+            cmd->removeNetLine(*line);
+            execNewChildCmd(cmd); // can throw
+            if (otherPoint != &mResultingNetPoint) {
+                auto* cmd = new CmdSchematicNetSegmentAddElements(resultingNetSegment);
+                cmd->addNetLine(mResultingNetPoint, *otherPoint);
+                execNewChildCmd(cmd); // can throw
+            }
+        }
+
+        // remove the unused netpoint
+        auto* cmd = new CmdSchematicNetSegmentRemoveElements(mNetPointToBeRemoved.getNetSegment());
+        cmd->removeNetPoint(mNetPointToBeRemoved);
+        execNewChildCmd(cmd); // can throw
+    }
 
     undoScopeGuard.dismiss(); // no undo required
     return true;

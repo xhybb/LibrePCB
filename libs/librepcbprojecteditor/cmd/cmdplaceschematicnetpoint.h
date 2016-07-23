@@ -36,6 +36,7 @@ namespace project {
 class Circuit;
 class Schematic;
 class SI_NetPoint;
+class SI_NetSegment;
 class NetSignal;
 
 /*****************************************************************************************
@@ -66,7 +67,8 @@ class CmdPlaceSchematicNetPoint final : public UndoCommandGroup
 
         bool buildAndExecuteChildCommands() throw (Exception);
         NetSignal* getOrCreateNewNetSignal() throw (Exception);
-        SI_NetPoint* createNewNetPoint(NetSignal& netsignal) throw (Exception);
+        SI_NetSegment* createNewNetSegment(NetSignal& netsignal) throw (Exception);
+        SI_NetPoint* createNewNetPoint(SI_NetSegment& netsegment) throw (Exception);
 
 
         // Private Member Variables

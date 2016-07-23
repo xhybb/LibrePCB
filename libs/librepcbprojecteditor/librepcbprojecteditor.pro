@@ -77,7 +77,8 @@ SOURCES += \
     boardeditor/fabricationoutputdialog.cpp \
     cmd/cmdremovedevicefromboard.cpp \
     cmd/cmdremoveviafromboard.cpp \
-    cmd/cmddetachboardnetpointfromviaorpad.cpp
+    cmd/cmddetachboardnetpointfromviaorpad.cpp \
+    cmd/cmdchangenetsignalofschematicnetsegment.cpp
 
 HEADERS += \
     projecteditor.h \
@@ -136,7 +137,8 @@ HEADERS += \
     boardeditor/fabricationoutputdialog.h \
     cmd/cmdremovedevicefromboard.h \
     cmd/cmdremoveviafromboard.h \
-    cmd/cmddetachboardnetpointfromviaorpad.h
+    cmd/cmddetachboardnetpointfromviaorpad.h \
+    cmd/cmdchangenetsignalofschematicnetsegment.h
 
 FORMS += \
     schematiceditor/schematiceditor.ui \
